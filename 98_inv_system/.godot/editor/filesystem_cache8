@@ -1,0 +1,19 @@
+ea4bc82a6ad023ab7ee23ee620429895
+::res://::1744933036
+icon.svg::CompressedTexture2D::1728462056270917900::1744804083::1744804090::1::::<><>::
+::res://addons/::1744805663
+::res://addons/inventorytool/::1744931257
+inventory_manager.gd::GDScript::-1::1744931257::0::1::::<>EditorPlugin<>::
+plugin.cfg::TextFile::-1::1744805663::0::1::::<><>::
+::res://addons/inventorytool/icons/::1744893717
+gridIcon 64x64.png::CompressedTexture2D::4818726869910130770::1744893710::1744893710::1::::<><>::
+inventoryManagerIcon_transparent.png::CompressedTexture2D::7744482105488643528::1744892957::1744893110::1::::<><>::
+listIcon.png::CompressedTexture2D::8127995348911743447::1744892650::1744892650::1::::<><>::
+listIcon_64x64.png::CompressedTexture2D::4903664020040666620::1744893082::1744893110::1::::<><>::
+openBoxIcon.png::CompressedTexture2D::7868285725864050013::1744892650::1744892650::1::::<><>::
+openBoxIcon_64x64.png::CompressedTexture2D::5896189415215554172::1744893040::1744893110::1::::<><>::
+::res://addons/inventorytool/scripts/::1744931109
+inventory_manager.gd::GDScript::-1::1744931109::0::1::::<>Control<>::
+::res://addons/inventorytool/ui/::1744931257
+inventoryManager.tscn::PackedScene::4057698574412959808::1744931257::0::1::::<><>::res://addons/inventorytool/scripts/inventory_manager.gd<>uid://cawhy0aswn0ks::::res://addons/inventorytool/icons/gridIcon 64x64.png<>uid://cb4mvoitle10s::::res://addons/inventorytool/icons/listIcon_64x64.png
+::res://scripts/::1744805683
