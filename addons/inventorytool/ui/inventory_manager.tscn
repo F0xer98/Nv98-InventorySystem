@@ -1,0 +1,187 @@
+[gd_scene load_steps=7 format=3 uid="uid://dbdncdg7e1oan"]
+
+[ext_resource type="Script" path="res://addons/inventorytool/scripts/inventory_manager.gd" id="1_ihh3t"]
+[ext_resource type="Texture2D" uid="uid://dny4huaw3oq0a" path="res://addons/inventorytool/icons/magnifying glass 64x64.png" id="2_f2362"]
+[ext_resource type="Texture2D" uid="uid://b32y2qjj1vheg" path="res://addons/inventorytool/icons/placeHolder.png" id="3_p8xd2"]
+[ext_resource type="Texture2D" uid="uid://4wlccm841kya" path="res://addons/inventorytool/icons/1891011_circle_cog_customize_gear_preferences_icon.png" id="4_5nk1d"]
+[ext_resource type="Texture2D" uid="uid://ddfj8hnp2icn0" path="res://addons/inventorytool/icons/1398911_correct_mark_success_tick_valid_icon (1).png" id="4_t8b11"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3jld2"]
+bg_color = Color(0.241156, 0.241156, 0.241156, 1)
+
+[node name="Inventory Manager" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ihh3t")
+
+[node name="read atlas" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="atlas loader" type="VBoxContainer" parent="read atlas"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="read atlas/atlas loader"]
+layout_mode = 2
+text = "Item Atlas"
+
+[node name="LoadButton" type="Button" parent="read atlas/atlas loader"]
+layout_mode = 2
+text = "Load item atlas"
+icon = ExtResource("2_f2362")
+expand_icon = true
+
+[node name="FileDialog" type="FileDialog" parent="read atlas/atlas loader"]
+title = "Open a File"
+position = Vector2i(0, 36)
+size = Vector2i(800, 600)
+unresizable = true
+min_size = Vector2i(800, 70)
+ok_button_text = "Open"
+file_mode = 0
+filters = PackedStringArray(".json")
+
+[node name="current atlas" type="VBoxContainer" parent="read atlas"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+
+[node name="R_ScrollContainer" type="ScrollContainer" parent="read atlas/current atlas"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="R_GridContainer" type="GridContainer" parent="read atlas/current atlas/R_ScrollContainer"]
+custom_minimum_size = Vector2(800, 600)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+columns = 3
+
+[node name="R_slotMaster" type="MarginContainer" parent="read atlas/current atlas/R_ScrollContainer/R_GridContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="R_PanelContainer" type="PanelContainer" parent="read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_3jld2")
+
+[node name="R_slot" type="HBoxContainer" parent="read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer"]
+layout_mode = 2
+
+[node name="R_TextureRect" type="TextureRect" parent="read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+texture = ExtResource("3_p8xd2")
+expand_mode = 2
+stretch_mode = 4
+
+[node name="R_MarginContainer" type="MarginContainer" parent="read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+
+[node name="R_ITEM_ID" type="Label" parent="read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot/R_MarginContainer"]
+layout_mode = 2
+text = "ID"
+
+[node name="R_MarginContainer2" type="MarginContainer" parent="read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+
+[node name="R_ITEM_NAME" type="Label" parent="read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot/R_MarginContainer2"]
+layout_mode = 2
+text = "NAME OF THE ITEM"
+
+[node name="R_MarginContainer3" type="MarginContainer" parent="read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+
+[node name="R_ITEM_AMOUNT" type="Label" parent="read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot/R_MarginContainer3"]
+layout_mode = 2
+text = "AMOUNT
+"
+
+[node name="R_PROPERTIES_EDITOR" type="Button" parent="read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot"]
+layout_mode = 2
+text = "EDIT PROPERTIES
+"
+icon = ExtResource("4_5nk1d")
+
+[node name="write atlas" type="VBoxContainer" parent="."]
+visible = false
+layout_mode = 2
+
+[node name="ITEM_IN_ATLAS" type="Label" parent="write atlas"]
+layout_mode = 2
+text = "Items in this Atlas"
+
+[node name="item viewer" type="VBoxContainer" parent="write atlas"]
+layout_mode = 2
+
+[node name="W_ScrollContainer" type="ScrollContainer" parent="write atlas/item viewer"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+
+[node name="W_PanelContainer" type="PanelContainer" parent="write atlas/item viewer/W_ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="W_organizer" type="VBoxContainer" parent="write atlas/item viewer/W_ScrollContainer/W_PanelContainer"]
+layout_mode = 2
+
+[node name="W_slotMaster" type="MarginContainer" parent="write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer"]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="W_PanelContainer_Slot" type="PanelContainer" parent="write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_3jld2")
+
+[node name="W_EDIT_VBOX" type="VBoxContainer" parent="write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot"]
+layout_mode = 2
+
+[node name="W_SLOT_EDIT" type="HBoxContainer" parent="write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX"]
+layout_mode = 2
+
+[node name="W_CHANGE_ICON" type="Button" parent="write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT"]
+layout_mode = 2
+text = "CHANGE ICON"
+icon = ExtResource("3_p8xd2")
+
+[node name="W_MarginContainer_editor" type="MarginContainer" parent="write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_right = 5
+
+[node name="W_CHANGE_ITEM_NAME" type="LineEdit" parent="write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_MarginContainer_editor"]
+layout_mode = 2
+placeholder_text = "ITEM NAME"
+max_length = 64
+expand_to_text_length = true
+
+[node name="W_MarginContainer2_editor" type="MarginContainer" parent="write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_right = 5
+
+[node name="W_CHANGE_AMOUNT" type="LineEdit" parent="write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_MarginContainer2_editor"]
+layout_mode = 2
+placeholder_text = "AMOUNT"
+max_length = 100
+expand_to_text_length = true
+
+[node name="W_CONFIRM_BTN" type="Button" parent="write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT"]
+layout_mode = 2
+text = "APPLY"
+icon = ExtResource("4_t8b11")
+
+[connection signal="pressed" from="read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot/R_PROPERTIES_EDITOR" to="." method="_on_edit_properties"]

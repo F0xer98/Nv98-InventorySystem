@@ -1,0 +1,8 @@
+{
+  "0": {
+	"NAME": "Exemple",
+	"AMOUNT": 10,
+	"STACK_SIZE": 64,
+	"ICON": "icon.png"
+  }
+}
