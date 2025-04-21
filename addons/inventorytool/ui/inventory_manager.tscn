@@ -185,3 +185,4 @@ text = "APPLY"
 icon = ExtResource("4_t8b11")
 
 [connection signal="pressed" from="read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot/R_PROPERTIES_EDITOR" to="." method="_on_edit_properties"]
+[connection signal="pressed" from="write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_CONFIRM_BTN" to="." method="_on_apply_changes"]
