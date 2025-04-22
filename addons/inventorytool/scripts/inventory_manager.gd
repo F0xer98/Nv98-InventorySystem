@@ -4,6 +4,7 @@
 extends Node
 class_name InventoryManager
 
+var current_json_path: String = "" #holds the path to selected .json file
 # --- FILE STRUCTURE ---
 
 # --- ATLAS LOADER ---
@@ -62,14 +63,26 @@ class_name InventoryManager
 
 var current_slot_texture : TextureRect = null # References TextureRect from item being edited - MUST BE A GLOBAL VARIABLE
 
+var ID : Array = [] #somente int
+var NAME : Array = [] #somente strings
+var ICON : Array = [] #somente ícones
+var AMOUNT: Array = []  #somente int
+
 func createNewSlot() -> void:
 	
 	# Reads itens in .json file
-	var items = readJson("res://addons/test/test.json")
+	var items = readJson(current_json_path)
 	
+	# --- ERROR CHECKING ---
+	
+	# Checks if current path is valid
+	if current_json_path.is_empty():
+		push_error("Nenhum arquivo JSON selecionado")
+		return
+		
 	# Grants there is anything to process
 	if items.is_empty():
-		print("JSON VAZIO OU INVÁLIDO")
+		push_error("JSON VAZIO OU INVÁLIDO")
 		return
 	
 	# Clears previous slots to avoid bugs
@@ -125,12 +138,6 @@ func createNewSlot() -> void:
 					
 		edit_btn.pressed.connect(_on_edit_properties.bind(id)) # conecta o sinal do botão de edição passando ID como parâmetro
 
-
-var ID : Array = [] #somente int
-var NAME : Array = [] #somente strings
-var ICON : Array = [] #somente ícones
-var AMOUNT: Array = []  #somente int
-
 func readJson(path: String) -> Dictionary:
 	# Limpa os arrays antes de carregar os novos dados
 	ID.clear()
@@ -185,11 +192,12 @@ func readJson(path: String) -> Dictionary:
 
 	return result
 
-	# Debug
-	#for i in range(ID.size()):
-		#print("Item %d: ID=%d, NAME=%s, ICON=%s" % [i, ID[i], NAME[i], str(ICON[i])])
-
-func writeJson(path: String):
+func writeJson():
+	# --- ERROR CHECKING ---
+	if current_json_path.is_empty():
+		push_error("Nenhum arquivo JSON selecionado")
+		return
+	
 	# Cria um dicionário para armazenar os dados dos itens
 	var data := {}
 
@@ -198,31 +206,27 @@ func writeJson(path: String):
 		# Constrói o dicionário de um item com NAME, AMOUNT e ICON
 		var item := {
 			"NAME": NAME[i],
-			#"AMOUNT": int(w_item_amount.text), # Aqui pegamos o valor direto do campo de UI, se quiser usar outro array, ajuste aqui
+			"AMOUNT": int(AMOUNT[i]),
 			"ICON": ICON[i]
 		}
 
-		# Converte o ID para string, pois o JSON da estrutura original usa strings como chave
+		# Converte o ID para string
 		data[str(ID[i])] = item
 
-	# Converte o dicionário completo em uma string JSON formatada
-	var json_string := JSON.stringify(data, "\t") # \t para identação legível
+	# Converte para string JSON formatada
+	var json_string := JSON.stringify(data, "\t")
 
-	# Tenta abrir o arquivo para escrita
-	var file := FileAccess.open(path, FileAccess.WRITE)
+	# Abre o arquivo selecionado originalmente para escrita
+	var file := FileAccess.open(current_json_path, FileAccess.WRITE)
 	if not file:
-		push_error("Erro ao abrir o arquivo para escrita: %s" % path)
+		push_error("Erro ao abrir o arquivo para escrita: %s" % current_json_path)
 		return
 
-	# Escreve a string JSON no arquivo
+	# Escreve e fecha o arquivo
 	file.store_string(json_string)
-
-	# Fecha o arquivo (boa prática)
 	file.close()
 
-	# Mensagem de debug
-	print("Arquivo salvo com sucesso em: %s" % path)
-
+	print("Arquivo salvo com sucesso em: %s" % current_json_path)
 func _ready():
 	load_button.pressed.connect(_on_load_btn_pressed)
 	file_dialog.file_selected.connect(_on_selected_file)
@@ -234,7 +238,10 @@ func _on_load_btn_pressed():
 	file_dialog.popup_centered()
 	file_dialog.filters = ["*.json"]  # filters only .json
 
+# When selected a .json file, calls readJson() to handle that information
+# Then calls createNewSlot() to effectively create a new slot
 func _on_selected_file(path: String):
+	current_json_path = path # a variável global de caminho do .json recebe o caminho apontado pelo FileDialog
 	readJson(path)
 	createNewSlot()
 
@@ -244,10 +251,23 @@ func _on_edit_properties(item_id) -> void:
 	print("Edit properties for ID: ", item_id)
 	write_atlas.visible = true
 	
+	# --- ERROR CHECKING ---
 	var index = ID.find(item_id)
 	if index == -1:
 		push_error("ID não encontrado: ", item_id)
 		return
+	
+	if current_json_path.is_empty():
+		push_error("Nenhum arquivo JSON selecionado")
+		return
+	
+	# Carrega os dados do JSON
+	var items = readJson(current_json_path)
+	if not items.has(str(item_id)):
+		push_error("Item ID não encontrado no JSON !")
+		return
+	
+	var item_data = items[str(item_id)]
 	
 	#encontrar o slot correspondente ao item_id
 	for slot in r_grid_container.get_children():
@@ -260,14 +280,30 @@ func _on_edit_properties(item_id) -> void:
 			current_slot_texture = slot.get_node("R_PanelContainer/R_slot/R_TextureRect")
 			break
 	
-	#atualiza a ui
-	item_in_atlas_name.text = NAME[index]
-	w_change_amount.text = str(AMOUNT[index])
 	
-	# conecta o botão de mudar o ícone
-	if not w_change_icon.pressed.is_connected(_on_change_icon):
-		w_change_icon.pressed.connect(_on_change_icon)
-
+	# --- PREENCHE OS CAMPOS DE EDIÇÃO ---
+	#item_in_atlas_name.text = NAME[index]
+	#w_change_amount.text = str(AMOUNT[index])
+	
+	item_in_atlas_name.text = "Editando: " + item_data.get("NAME", "Sem Nome")
+	w_change_item_name.text = item_data.get("NAME", "")
+	w_change_amount.text = str(item_data.get("AMOUNT", 0))
+	
+	# --- CONEXÃO DOS BOTÕES ---
+	
+	# Botão de confirmar mudanças
+	if w_confirm_btn.pressed.is_connected(_on_apply_changes):
+		w_confirm_btn.pressed.disconnect(_on_apply_changes)
+		w_confirm_btn.pressed.connect(_on_apply_changes.bind(item_id))
+	
+	
+	# Botão de mudar ícone
+	if w_change_icon.pressed.is_connected(_on_change_icon):
+		w_change_icon.pressed.disconnect(_on_change_icon)
+	w_change_icon.pressed.connect(_on_change_icon.bind(item_id))
+	
+	print("Alterou o json")
+	
 func _on_apply_changes() -> void:
 	print("apply changes")
 	write_atlas.visible = false
@@ -285,7 +321,7 @@ func _on_change_icon() -> void:
 	
 	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	file_dialog.access = FileDialog.ACCESS_RESOURCES
-	file_dialog.filters = [".png", ".jpg", ".jpeg"]
+	file_dialog.filters = ["*.png", "*.jpg", "*.jpeg"]
 	
 	file_dialog.files_selected.connect(func(path): # função lambda pra economizar espaço
 		if ResourceLoader.exists(path):

@@ -4,11 +4,17 @@
 	"AMOUNT": 10,
 	"STACK_SIZE": 64,
 	"ICON": "res://addons/inventorytool/icons/magnifying glass 64x64.png"
-  },
+	},
 	"1":{
 		"NAME": "Item 1",
 		"AMOUNT": 10,
 		"STACK_SIZE": 64,
 		"ICON": "res://addons/inventorytool/icons/listIcon.png"
-  }
+		},
+	"2":{
+		"NAME": "Item 1",
+		"AMOUNT": 10,
+		"STACK_SIZE": 64,
+		"ICON": "res://addons/inventorytool/icons/listIcon.png"
+		},
 }
