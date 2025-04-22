@@ -37,7 +37,10 @@ class_name InventoryManager
 
 # --- WRITE ATLAS ---
 @onready var write_atlas: VBoxContainer = $"write atlas"
-@onready var item_in_atlas: Label = $"write atlas/ITEM_IN_ATLAS"
+
+@onready var w_item_label: HBoxContainer = $"write atlas/w_item_label"
+@onready var item_in_atlas: Label = $"write atlas/w_item_label/ITEM_IN_ATLAS"
+@onready var item_in_atlas_name: Label = $"write atlas/w_item_label/ITEM_IN_ATLAS_NAME"
 
 @onready var w_scroll_container: ScrollContainer = $"write atlas/item viewer/W_ScrollContainer"
 @onready var w_panel_container: PanelContainer = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer"
@@ -57,6 +60,8 @@ class_name InventoryManager
 
 @onready var w_confirm_btn: Button = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_CONFIRM_BTN"
 
+var current_slot_texture : TextureRect = null # References TextureRect from item being edited - MUST BE A GLOBAL VARIABLE
+
 func createNewSlot() -> void:
 	
 	# Reads itens in .json file
@@ -71,12 +76,10 @@ func createNewSlot() -> void:
 	for child in r_grid_container.get_children():
 		if child != r_slot_master: # Não remova o slot master original
 			child.queue_free()
-		print("Limpou slots e filhos de current atlas")
 	
 	# Gets every item in JSON
 	for id in items.keys():
 		var item = items[id]
-		print("Processando item: ", item)
 	
 	# Creates a new "R_slotMaster" for EACH item present in .json
 	for id in items.keys():
@@ -118,20 +121,22 @@ func createNewSlot() -> void:
 				slot_texture.texture = load(icon_path)
 			else:
 				print("Ícone não encontrado: ", icon_path)
-		
-		# Connects the edit_btn's signal
-		if edit_btn.is_connected("pressed", _on_edit_properties):
-			edit_btn.disconnect("pressed", _on_edit_properties)
-		edit_btn.pressed.connect(_on_edit_properties.bind(int(id)))
-		
-		print("Slot criado com sucesso para o item ID: ", id)
+				
+					
+		edit_btn.pressed.connect(_on_edit_properties.bind(id)) # conecta o sinal do botão de edição passando ID como parâmetro
 
-		
+
+var ID : Array = [] #somente int
+var NAME : Array = [] #somente strings
+var ICON : Array = [] #somente ícones
+var AMOUNT: Array = []  #somente int
+
 func readJson(path: String) -> Dictionary:
 	# Limpa os arrays antes de carregar os novos dados
 	ID.clear()
 	NAME.clear()
 	ICON.clear()
+	AMOUNT.clear()
 
 	# Tenta abrir o arquivo para leitura
 	var file := FileAccess.open(path, FileAccess.READ)
@@ -163,11 +168,14 @@ func readJson(path: String) -> Dictionary:
 		var id = int(id_str)
 		var name = item.get("NAME", "SEM_NOME")
 		var icon = item.get("ICON", null)
-
+		var amount = item.get("AMOUNT", 0)
+		
+		
 		# Adiciona nos arrays
 		ID.append(id)
 		NAME.append(name)
 		ICON.append(icon)
+		AMOUNT.append(amount)
 
 		# Adiciona ao dicionário final
 		result[id] = {
@@ -221,31 +229,75 @@ func _ready():
 	
 	r_slot_master.visible = false
 	write_atlas.visible = false
+	
 func _on_load_btn_pressed():
 	file_dialog.popup_centered()
 	file_dialog.filters = ["*.json"]  # filters only .json
-
 
 func _on_selected_file(path: String):
 	readJson(path)
 	createNewSlot()
 
-var ID : Array = [] #somente int
-var NAME : Array = [] #somente strings
-var ICON : Array = [] #somente ícones
-var AMOUNT: Array = [] 
-
-# edita as propriedades de um item específico
-# ao clicar no botão "edit properties"
-# abre uma nova janela (write atlas)
-# onde há a possibilidade de mudar:
-# o ícone, nome do item, e quantidade
-# ao aplicar writeJson()
-var _currentEditIndex : int = -1 #-1 é o default
-func _on_edit_properties() -> void:
-	print("Edit properties")
+func _on_edit_properties(item_id) -> void:
+	
+	# --- DEBUG ---
+	print("Edit properties for ID: ", item_id)
 	write_atlas.visible = true
 	
+	var index = ID.find(item_id)
+	if index == -1:
+		push_error("ID não encontrado: ", item_id)
+		return
+	
+	#encontrar o slot correspondente ao item_id
+	for slot in r_grid_container.get_children():
+		if slot == r_slot_master:
+			continue
+		
+		var slot_id_text = slot.get_node("R_PanelContainer/R_slot/R_MarginContainer/R_ITEM_ID").text
+		
+		if int(slot_id_text) == item_id:
+			current_slot_texture = slot.get_node("R_PanelContainer/R_slot/R_TextureRect")
+			break
+	
+	#atualiza a ui
+	item_in_atlas_name.text = NAME[index]
+	w_change_amount.text = str(AMOUNT[index])
+	
+	# conecta o botão de mudar o ícone
+	if not w_change_icon.pressed.is_connected(_on_change_icon):
+		w_change_icon.pressed.connect(_on_change_icon)
+
 func _on_apply_changes() -> void:
 	print("apply changes")
 	write_atlas.visible = false
+
+func _on_change_icon() -> void:
+	
+	print("Mudar de ícone") # --- DEBUG ---
+	
+	if not current_slot_texture:
+		push_error("Nenhum slot selecionado para trocar ícone")
+		return
+	
+	#Criar um FileDialog temporário
+	var file_dialog = FileDialog.new()
+	
+	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+	file_dialog.access = FileDialog.ACCESS_RESOURCES
+	file_dialog.filters = [".png", ".jpg", ".jpeg"]
+	
+	file_dialog.files_selected.connect(func(path): # função lambda pra economizar espaço
+		if ResourceLoader.exists(path):
+			var new_texture = load(path)
+			current_slot_texture.texture = new_texture
+			
+			var index = ID.find((int(current_slot_texture.get_parent().get_parent().get_node("R_MarginContainer/R_ITEM_ID").text)))
+			
+			if index != -1:
+				ICON[index] = path
+		
+		file_dialog.queue_free()
+		)
+	add_child(file_dialog)
+	file_dialog.popup_centered_ratio()
