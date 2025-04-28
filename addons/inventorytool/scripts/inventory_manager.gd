@@ -39,6 +39,7 @@ var create_json_path: String = "" # hold the path to a new atlas
 @onready var c_max_stack: Label = $"create atlas/current atlas visualizer/C_SLOTMASTER_TEMPLATE/C_PANEL_SLOT/C_ICON_HBOX/C_MAX_STACK_MARGIN/C_MAX_STACK"
 
 
+
 # --- ATLAS LOADER ---
 @onready var atlas_loader: VBoxContainer = $"read atlas/atlas loader"
 @onready var load_button: Button = $"read atlas/atlas loader/LoadButton"
@@ -82,9 +83,6 @@ var create_json_path: String = "" # hold the path to a new atlas
 
 var current_slot_texture : TextureRect = null # References TextureRect from item being edited - MUST BE A GLOBAL VARIABLE
 
-var slot_counter : int = 0 # Contador Unico para um meta-id de cada slot
-var current_slots : Array = []
-
 # arrays usados PARA CRIAÇÃO DE NOVO ATLAS
 var create_ID : Array = [] #somente int
 var create_NAME : Array = [] #somente strings
@@ -97,10 +95,7 @@ var NAME : Array = [] #somente strings
 var ICON : Array = [] #somente ícones
 var AMOUNT: Array = []  #somente int
 
-
-
 func createLoadSlot() -> void:
-	
 	# Reads itens in .json file
 	var items = readJson(current_json_path)
 	
@@ -219,29 +214,34 @@ func readJson(path: String) -> Dictionary:
 
 	return result
 
-## Remove tanto da UI quanto do array (que posteriormente vai pro .json)
 func deleteSlotAtlas() -> void:
-
-	# Se não tiver slot novo, não faz nada
-	if current_slots.is_empty(): #variável current_slots
-		print("Sem slots para apagar")
-		return
 	
+	# Se não tiver slot novo, não faz nada
+	if current_slots.size() == 0:
+		print("Nenhum slot para apagar")
+		return
+
 	# Pega o último slot que foi adicionado
 	var last_slot = current_slots.pop_back()
-	scroll_vbox.remove_child(last_slot) # remove da scene (no caso da parte onde add os itens ao atlas)
-	last_slot.queue_free()
 	
-	# Pop dos arrays de criação
+	# Remove ele da cena, seja qual for o parent
+	var parent = last_slot.get_parent()
+	if parent:
+		parent.remove_child(last_slot)
+	
+	# libera o nó da cena
+	last_slot.queue_free()
+
+	# Sincroniza os arrays de dados de criação
 	if create_ID.size() > 0:
 		create_ID.pop_back()
 		create_NAME.pop_back()
 		create_ICON.pop_back()
 		create_AMOUNT.pop_back()
-	print("Slot apagado, restam %d slots" % current_slots.size())
+	print("Slot apagado. Restam %d slots." % current_slots.size())
 	
-	#Crasha após 2 clicks no botão de apagar
-	
+	# Só retorna no print "Nenhum slot para apagar"
+
 func writeJson():
 	
 	# --- ERROR CHECKING ---
@@ -294,6 +294,8 @@ func writeJson():
 	print("Total de itens salvos: ", json_data.size())
 
 # used in both createNewAtlas and _on_new_slot_created
+var current_slots : Array = []
+var selected_slot = null
 
 func createNewAtlas() -> void: # Cria um novo slot no .json do atlas
 	
@@ -329,41 +331,27 @@ func createNewAtlas() -> void: # Cria um novo slot no .json do atlas
 
 
 ## Cria um template de slot no atlas.
-## Cada slot na UI representa um item no atlas.
+## Cada slot na UI representa um item no atlas (json).
 func _on_new_slot_created() -> void:
-	
 	print("Novo slot criado")
+	create_scroll_container.visible = true
 	
 	# Duplica a instância do slotTemplate
 	var new_slot = slot_template.duplicate()
+	
+	# Configura esta nova instância
 	new_slot.visible = true
+	new_slot.name = "Slot_%d" % current_slots.size() # seta o nome para "Slot + quantos slots tem"
 	
-	# Gera e atribui um meta-ID único para o slot
-	slot_counter += 1
-	new_slot.set_meta("ui_id", slot_counter)
-	
-	# Adiciona na lista de slots e na UI
-	current_slots.append(new_slot)
+	# Adiciona ao container
 	scroll_vbox.add_child(new_slot)
-	
-	# Registra sinais para detectar clique no botão e nos LIneEdits
-	_register_slot_signals(new_slot)
-	
-	print("Nove slot criado com ui_id= ", slot_counter)
-
-
-## Conecta sinais internos de um slot
-func _register_slot_signals(slot: Node) -> void:
-	var ui_id = slot.get_meta("ui_id")
-	
-	# checar gpt pro codigo
+	current_slots.append(new_slot)
 
 func _ready() -> void:
 	load_button.pressed.connect(_on_load_btn_pressed)
 	file_dialog.file_selected.connect(_on_selected_file)
 	create_button.pressed.connect(createNewAtlas)
 	new_slot_btn.pressed.connect(_on_new_slot_created)
-	
 	
 	r_slot_master.visible = false
 	write_atlas.visible = false
