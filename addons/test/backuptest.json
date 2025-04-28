@@ -1,7 +1,7 @@
 {
-  "0": {
-	"NAME": "ITEM TESTE JSON",
-	"AMOUNT": 100,
-	"ICON": "icon.png"
-  }
+	"0": {
+		"NAME": "teste",
+		"AMOUNT": 1,
+		"ICON": "icon.png"
+	}
 }

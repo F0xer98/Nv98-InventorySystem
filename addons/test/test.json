@@ -1,9 +1,9 @@
 {
-  "0": {
-	"NAME": "Item 0",
-	"AMOUNT": 10,
-	"STACK_SIZE": 64,
-	"ICON": "res://addons/inventorytool/icons/magnifying glass 64x64.png"
+	"0": {
+		"NAME": "Item 0",
+		"AMOUNT": 10,
+		"STACK_SIZE": 64,
+		"ICON": "res://addons/inventorytool/icons/magnifying glass 64x64.png"
 	},
 	"1":{
 		"NAME": "Item 1",

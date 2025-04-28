@@ -5,70 +5,101 @@ extends Node
 class_name InventoryManager
 
 var current_json_path: String = "" #holds the path to selected .json file
+var create_json_path: String = "" # hold the path to a new atlas
 # --- FILE STRUCTURE ---
+
+# --- CREATE ATLAS ---
+@onready var create_atlas: VBoxContainer = $"create atlas"
+@onready var create_button: Button = $"create atlas/CreateButton" # used to popup the FileDialog
+@onready var create_h_box_container: HBoxContainer = $"create atlas/HBoxContainer"
+@onready var new_slot_btn: Button = $"create atlas/HBoxContainer/NewSlotBtn"
+@onready var delete_slot_btn: Button = $"create atlas/HBoxContainer/DeleteSlotBtn"
+@onready var create_scroll_container: ScrollContainer = $"create atlas/CreateScrollContainer"
+@onready var scroll_vbox: VBoxContainer = $"create atlas/CreateScrollContainer/scrollVbox"
+@onready var slot_template: MarginContainer = $"create atlas/CreateScrollContainer/scrollVbox/slotTemplate"
+@onready var v_box_container: VBoxContainer = $"create atlas/CreateScrollContainer/scrollVbox/slotTemplate/VBoxContainer"
+@onready var main_item_holder: HBoxContainer = $"create atlas/CreateScrollContainer/scrollVbox/slotTemplate/VBoxContainer/mainItemHolder"
+@onready var add_icon_to_json: Button = $"create atlas/CreateScrollContainer/scrollVbox/slotTemplate/VBoxContainer/mainItemHolder/addIconToJson"
+@onready var add_id_to_json: LineEdit = $"create atlas/CreateScrollContainer/scrollVbox/slotTemplate/VBoxContainer/mainItemHolder/addIDToJson"
+@onready var add_name_to_json: LineEdit = $"create atlas/CreateScrollContainer/scrollVbox/slotTemplate/VBoxContainer/mainItemHolder/addNameToJson"
+@onready var line_edit_2: LineEdit = $"create atlas/CreateScrollContainer/scrollVbox/slotTemplate/VBoxContainer/mainItemHolder/LineEdit2"
+@onready var create_file_dialog: FileDialog = $"create atlas/CreateScrollContainer/scrollVbox/slotTemplate/VBoxContainer/mainItemHolder/createFileDialog"
+
+# --- CURRENT ATLAS VISUALIZER ---
+@onready var current_atlas_visualizer: VBoxContainer = $"create atlas/current atlas visualizer"
+@onready var c_slotmaster_template: MarginContainer = $"create atlas/current atlas visualizer/C_SLOTMASTER_TEMPLATE"
+@onready var c_panel_slot: PanelContainer = $"create atlas/current atlas visualizer/C_SLOTMASTER_TEMPLATE/C_PANEL_SLOT"
+@onready var c_icon_hbox: HBoxContainer = $"create atlas/current atlas visualizer/C_SLOTMASTER_TEMPLATE/C_PANEL_SLOT/C_ICON_HBOX"
+@onready var c_icon: TextureRect = $"create atlas/current atlas visualizer/C_SLOTMASTER_TEMPLATE/C_PANEL_SLOT/C_ICON_HBOX/C_ICON"
+@onready var c_id_margin: MarginContainer = $"create atlas/current atlas visualizer/C_SLOTMASTER_TEMPLATE/C_PANEL_SLOT/C_ICON_HBOX/C_ID_MARGIN"
+@onready var c_item_id: Label = $"create atlas/current atlas visualizer/C_SLOTMASTER_TEMPLATE/C_PANEL_SLOT/C_ICON_HBOX/C_ID_MARGIN/C_ITEM_ID"
+@onready var c_name_margin: MarginContainer = $"create atlas/current atlas visualizer/C_SLOTMASTER_TEMPLATE/C_PANEL_SLOT/C_ICON_HBOX/C_NAME_MARGIN"
+@onready var c_item_name: Label = $"create atlas/current atlas visualizer/C_SLOTMASTER_TEMPLATE/C_PANEL_SLOT/C_ICON_HBOX/C_NAME_MARGIN/C_ITEM_NAME"
+@onready var c_max_stack_margin: MarginContainer = $"create atlas/current atlas visualizer/C_SLOTMASTER_TEMPLATE/C_PANEL_SLOT/C_ICON_HBOX/C_MAX_STACK_MARGIN"
+@onready var c_max_stack: Label = $"create atlas/current atlas visualizer/C_SLOTMASTER_TEMPLATE/C_PANEL_SLOT/C_ICON_HBOX/C_MAX_STACK_MARGIN/C_MAX_STACK"
+
 
 # --- ATLAS LOADER ---
 @onready var atlas_loader: VBoxContainer = $"read atlas/atlas loader"
-@onready var label: Label = $"read atlas/atlas loader/Label"
 @onready var load_button: Button = $"read atlas/atlas loader/LoadButton"
 @onready var file_dialog: FileDialog = $"read atlas/atlas loader/FileDialog"
+@onready var r_slot_master: MarginContainer = $"read atlas/atlas loader/R_slotMaster"
+@onready var r_panel_container: PanelContainer = $"read atlas/atlas loader/R_slotMaster/R_PanelContainer"
+@onready var r_slot: HBoxContainer = $"read atlas/atlas loader/R_slotMaster/R_PanelContainer/R_slot"
+@onready var r_texture_rect: TextureRect = $"read atlas/atlas loader/R_slotMaster/R_PanelContainer/R_slot/R_TextureRect"
+@onready var r_margin_container: MarginContainer = $"read atlas/atlas loader/R_slotMaster/R_PanelContainer/R_slot/R_MarginContainer"
+@onready var r_item_id: Label = $"read atlas/atlas loader/R_slotMaster/R_PanelContainer/R_slot/R_MarginContainer/R_ITEM_ID"
+@onready var r_margin_container_2: MarginContainer = $"read atlas/atlas loader/R_slotMaster/R_PanelContainer/R_slot/R_MarginContainer2"
+@onready var r_item_name: Label = $"read atlas/atlas loader/R_slotMaster/R_PanelContainer/R_slot/R_MarginContainer2/R_ITEM_NAME"
+@onready var r_margin_container_3: MarginContainer = $"read atlas/atlas loader/R_slotMaster/R_PanelContainer/R_slot/R_MarginContainer3"
+@onready var r_item_amount: Label = $"read atlas/atlas loader/R_slotMaster/R_PanelContainer/R_slot/R_MarginContainer3/R_ITEM_AMOUNT"
+@onready var r_properties_editor: Button = $"read atlas/atlas loader/R_slotMaster/R_PanelContainer/R_slot/R_PROPERTIES_EDITOR"
+
 
 # --- CURRENT ATLAS LOADED ---
 @onready var current_atlas: VBoxContainer = $"read atlas/current atlas"
 @onready var r_scroll_container: ScrollContainer = $"read atlas/current atlas/R_ScrollContainer"
 @onready var r_grid_container: GridContainer = $"read atlas/current atlas/R_ScrollContainer/R_GridContainer"
 
-# r_slot_master é o template
-@onready var r_slot_master: MarginContainer = $"read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster"
-@onready var r_panel_container: PanelContainer = $"read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer"
-
-@onready var r_slot: HBoxContainer = $"read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot"
-@onready var r_texture_rect: TextureRect = $"read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot/R_TextureRect"
-
-@onready var r_margin_container: MarginContainer = $"read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot/R_MarginContainer"
-@onready var r_item_id: Label = $"read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot/R_MarginContainer/R_ITEM_ID"
-
-@onready var r_margin_container_2: MarginContainer = $"read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot/R_MarginContainer2"
-@onready var r_item_name: Label = $"read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot/R_MarginContainer2/R_ITEM_NAME"
-
-@onready var r_margin_container_3: MarginContainer = $"read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot/R_MarginContainer3"
-@onready var r_item_amount: Label = $"read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot/R_MarginContainer3/R_ITEM_AMOUNT"
-
-@onready var r_properties_editor: Button = $"read atlas/current atlas/R_ScrollContainer/R_GridContainer/R_slotMaster/R_PanelContainer/R_slot/R_PROPERTIES_EDITOR"
-
 # --- WRITE ATLAS ---
 @onready var write_atlas: VBoxContainer = $"write atlas"
-
 @onready var w_item_label: HBoxContainer = $"write atlas/w_item_label"
 @onready var item_in_atlas: Label = $"write atlas/w_item_label/ITEM_IN_ATLAS"
 @onready var item_in_atlas_name: Label = $"write atlas/w_item_label/ITEM_IN_ATLAS_NAME"
-
 @onready var w_scroll_container: ScrollContainer = $"write atlas/item viewer/W_ScrollContainer"
 @onready var w_panel_container: PanelContainer = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer"
 @onready var w_organizer: VBoxContainer = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer"
 @onready var w_slot_master: MarginContainer = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster"
 @onready var w_panel_container_slot: PanelContainer = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot"
 @onready var w_edit_vbox: VBoxContainer = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX"
-
 @onready var w_slot_edit: HBoxContainer = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT"
 @onready var w_change_icon: Button = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_CHANGE_ICON"
-
 @onready var w_margin_container_editor: MarginContainer = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_MarginContainer_editor"
 @onready var w_change_item_name: LineEdit = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_MarginContainer_editor/W_CHANGE_ITEM_NAME"
-
 @onready var w_margin_container_2_editor: MarginContainer = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_MarginContainer2_editor"
 @onready var w_change_amount: LineEdit = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_MarginContainer2_editor/W_CHANGE_AMOUNT"
-
 @onready var w_confirm_btn: Button = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_CONFIRM_BTN"
 
 var current_slot_texture : TextureRect = null # References TextureRect from item being edited - MUST BE A GLOBAL VARIABLE
 
+var slot_counter : int = 0 # Contador Unico para um meta-id de cada slot
+var current_slots : Array = []
+
+# arrays usados PARA CRIAÇÃO DE NOVO ATLAS
+var create_ID : Array = [] #somente int
+var create_NAME : Array = [] #somente strings
+var create_ICON : Array = [] #somente ícones
+var create_AMOUNT: Array = []  #somente int
+
+#arrays usados PARA EDIÇÃO DE ATLAS
 var ID : Array = [] #somente int
 var NAME : Array = [] #somente strings
 var ICON : Array = [] #somente ícones
 var AMOUNT: Array = []  #somente int
 
-func createNewSlot() -> void:
+
+
+func createLoadSlot() -> void:
 	
 	# Reads itens in .json file
 	var items = readJson(current_json_path)
@@ -80,21 +111,17 @@ func createNewSlot() -> void:
 		push_error("Nenhum arquivo JSON selecionado")
 		return
 		
-	# Grants there is anything to process
+	# Grants there is anything inside that .json to process
 	if items.is_empty():
 		push_error("JSON VAZIO OU INVÁLIDO")
 		return
 	
 	# Clears previous slots to avoid bugs
 	for child in r_grid_container.get_children():
-		if child != r_slot_master: # Não remova o slot master original
+		if child != r_slot_master: # Do not remove the original template
 			child.queue_free()
 	
-	# Gets every item in JSON
-	for id in items.keys():
-		var item = items[id]
-	
-	# Creates a new "R_slotMaster" for EACH item present in .json
+	# Creates a new "R_slotMaster" for EACH item present in the .json
 	for id in items.keys():
 		var item_data = items[id]
 		
@@ -135,8 +162,8 @@ func createNewSlot() -> void:
 			else:
 				print("Ícone não encontrado: ", icon_path)
 				
-					
-		edit_btn.pressed.connect(_on_edit_properties.bind(id)) # conecta o sinal do botão de edição passando ID como parâmetro
+		# conecta o sinal do botão de edição passando ID como parâmetro (int)
+		edit_btn.pressed.connect(_on_edit_properties.bind(int(id)))
 
 func readJson(path: String) -> Dictionary:
 	# Limpa os arrays antes de carregar os novos dados
@@ -192,82 +219,225 @@ func readJson(path: String) -> Dictionary:
 
 	return result
 
+## Remove tanto da UI quanto do array (que posteriormente vai pro .json)
+func deleteSlotAtlas() -> void:
+
+	# Se não tiver slot novo, não faz nada
+	if current_slots.is_empty(): #variável current_slots
+		print("Sem slots para apagar")
+		return
+	
+	# Pega o último slot que foi adicionado
+	var last_slot = current_slots.pop_back()
+	scroll_vbox.remove_child(last_slot) # remove da scene (no caso da parte onde add os itens ao atlas)
+	last_slot.queue_free()
+	
+	# Pop dos arrays de criação
+	if create_ID.size() > 0:
+		create_ID.pop_back()
+		create_NAME.pop_back()
+		create_ICON.pop_back()
+		create_AMOUNT.pop_back()
+	print("Slot apagado, restam %d slots" % current_slots.size())
+	
+	#Crasha após 2 clicks no botão de apagar
+	
 func writeJson():
+	
 	# --- ERROR CHECKING ---
 	if current_json_path.is_empty():
 		push_error("Nenhum arquivo JSON selecionado")
 		return
 	
-	# Cria um dicionário para armazenar os dados dos itens
-	var data := {}
-
-	# Percorre os arrays paralelos (ID, NAME, ICON)
+	if ID.is_empty():
+		push_error("Verifique a chave principal dos itens no JSON, está vazio")
+	
+	var json_data : Dictionary = {}
+	var item_data : Dictionary = {}
+	var json_string : String
+	
+	# Preenche os dados NO ARQUIVO .JSON
 	for i in range(ID.size()):
-		# Constrói o dicionário de um item com NAME, AMOUNT e ICON
-		var item := {
+		# Verificação de segurança para índices válidos
+		if i >= ID.size():
+			push_error("Índice ID fora dos limites do array: ", i)
+			continue
+		
+		# Constrói cada item do inventário
+		item_data = {
 			"NAME": NAME[i],
-			"AMOUNT": int(AMOUNT[i]),
-			"ICON": ICON[i]
+			"AMOUNT": int(AMOUNT[i]) if str(AMOUNT[i]).is_valid_int() else 0, #AMOUNT = i as int if not valid AMOUNT = 0
+			"ICON": ICON[i] if ICON[i] != null else ""
 		}
-
-		# Converte o ID para string
-		data[str(ID[i])] = item
-
-	# Converte para string JSON formatada
-	var json_string := JSON.stringify(data, "\t")
-
-	# Abre o arquivo selecionado originalmente para escrita
-	var file := FileAccess.open(current_json_path, FileAccess.WRITE)
-	if not file:
-		push_error("Erro ao abrir o arquivo para escrita: %s" % current_json_path)
+		
+		# Adiciona ao dicionário principal
+		json_data[str(ID[i])] = item_data
+	
+	# Converte para JSON formatado
+	if not json_data.is_empty():
+		json_string = JSON.stringify(json_data, "\t", false, true)
+	else:
+		push_error("Dados do JSON estão vazios")
 		return
-
-	# Escreve e fecha o arquivo
+	
+	
+	# Escreve no arquivo .json selecionado
+	var file : FileAccess = FileAccess.open(current_json_path, FileAccess.WRITE)
+	if not file:
+		push_error("Falha ao abrir arquivo para escrita: ", FileAccess.get_open_error())
+		return
+	
 	file.store_string(json_string)
 	file.close()
+	
+	print("Atlas salvo com sucesso em: ", current_json_path)
+	print("Total de itens salvos: ", json_data.size())
 
-	print("Arquivo salvo com sucesso em: %s" % current_json_path)
-func _ready():
+# used in both createNewAtlas and _on_new_slot_created
+
+func createNewAtlas() -> void: # Cria um novo slot no .json do atlas
+	
+	# Altera a visibilidade da área de criação
+	create_h_box_container.visible = not create_h_box_container.visible # os botões de criar / deletar slot
+	create_scroll_container.visible = not create_scroll_container.visible # para modo de edição
+	
+	# Só entra no modo edição se a janela estiver aberta para evitar problemas
+	if create_scroll_container.visible:
+		print("Modo criação de atlas")
+		
+		# Limpa arrays de criação de items para novo atlas
+		create_ID.clear()
+		create_NAME.clear()
+		create_ICON.clear()
+		create_AMOUNT.clear()
+		
+		# Cria um item inicial vazio nos arrays de edição
+		create_ID.append(0)
+		create_NAME.append("NOVO ITEM")
+		create_AMOUNT.append("0")
+		create_ICON.append("")
+		
+		# caminho para a pasta onde o .json será salvo
+		create_json_path = "" #Somente para iniciar. Será definido ao salvar
+		
+		# Preenche campos da UI do current atlas visualizer com valores de teste
+		
+		
+	# sai do modo edição
+	else:
+		print("Criação de atlas desativado")
+
+
+## Cria um template de slot no atlas.
+## Cada slot na UI representa um item no atlas.
+func _on_new_slot_created() -> void:
+	
+	print("Novo slot criado")
+	
+	# Duplica a instância do slotTemplate
+	var new_slot = slot_template.duplicate()
+	new_slot.visible = true
+	
+	# Gera e atribui um meta-ID único para o slot
+	slot_counter += 1
+	new_slot.set_meta("ui_id", slot_counter)
+	
+	# Adiciona na lista de slots e na UI
+	current_slots.append(new_slot)
+	scroll_vbox.add_child(new_slot)
+	
+	# Registra sinais para detectar clique no botão e nos LIneEdits
+	_register_slot_signals(new_slot)
+	
+	print("Nove slot criado com ui_id= ", slot_counter)
+
+
+## Conecta sinais internos de um slot
+func _register_slot_signals(slot: Node) -> void:
+	var ui_id = slot.get_meta("ui_id")
+	
+	# checar gpt pro codigo
+
+func _ready() -> void:
 	load_button.pressed.connect(_on_load_btn_pressed)
 	file_dialog.file_selected.connect(_on_selected_file)
+	create_button.pressed.connect(createNewAtlas)
+	new_slot_btn.pressed.connect(_on_new_slot_created)
+	
 	
 	r_slot_master.visible = false
 	write_atlas.visible = false
+	create_scroll_container.visible = false
+	create_h_box_container.visible = false
 	
-func _on_load_btn_pressed():
+func _on_load_btn_pressed() -> void:
+	
 	file_dialog.popup_centered()
 	file_dialog.filters = ["*.json"]  # filters only .json
 
 # When selected a .json file, calls readJson() to handle that information
 # Then calls createNewSlot() to effectively create a new slot
-func _on_selected_file(path: String):
+func _on_selected_file(path: String) -> void:
 	current_json_path = path # a variável global de caminho do .json recebe o caminho apontado pelo FileDialog
 	readJson(path)
-	createNewSlot()
+	createLoadSlot()
 
-func _on_edit_properties(item_id) -> void:
-	
-	# --- DEBUG ---
-	print("Edit properties for ID: ", item_id)
+func _on_edit_properties(item_id: int) -> void:
+
 	write_atlas.visible = true
 	
 	# --- ERROR CHECKING ---
-	var index = ID.find(item_id)
-	if index == -1:
+	var index = ID.find(item_id) # recebe int
+	print("Current index: ", index)
+	
+	# Para índices inválidos
+	if index < 0:
 		push_error("ID não encontrado: ", item_id)
 		return
 	
+	# Para json vazios
 	if current_json_path.is_empty():
 		push_error("Nenhum arquivo JSON selecionado")
 		return
 	
-	# Carrega os dados do JSON
-	var items = readJson(current_json_path)
-	if not items.has(str(item_id)):
-		push_error("Item ID não encontrado no JSON !")
-		return
+	# ###### BEGIN OF TEST PART #######
 	
-	var item_data = items[str(item_id)]
+	# Carrega os dados do JSON
+	var items_dictionary = readJson(current_json_path) # recebe o dictionary do .json inteiro
+	
+	
+	# FOR ERROR CHECKING
+	var item_found: bool = false
+	var item_key = null
+	
+	# Tentativa 1 : Busca DIRETA por string, exatamente como está no json
+	if items_dictionary.has(str(item_id)):
+		item_key = str(item_id)
+		item_found = true
+	
+	# Tentativa 2 : Buscar pelo int (caso o json não tenha sido convertido)
+	elif items_dictionary.has(item_id):
+		item_key = item_id
+		item_found = true
+	
+	# Tentativa 3: Busca EM TODAS AS CHAVES (case sensetive e os caralhos)
+	
+	else:
+		for key in items_dictionary.keys():
+			if str(key).to_int() == item_id:
+				item_key = key
+				item_found = true
+				break
+		if not item_found:
+			push_error("Item ID não encontrado no JSON após tentativas, o erro está em outro lugar, ", item_id)
+			print("IDs disponíveis no JSON: ", items_dictionary.keys())
+			print("Tipos das chaves: ", items_dictionary.keys().map(func(k): return typeof(k)))
+	
+	# If no error is reported, then it works :)
+	
+	var item_data = items_dictionary[item_key] #mantém como string pois as chaves do json são strings
+	
+	# ###### END OF TEST PART ######
 	
 	#encontrar o slot correspondente ao item_id
 	for slot in r_grid_container.get_children():
@@ -282,9 +452,7 @@ func _on_edit_properties(item_id) -> void:
 	
 	
 	# --- PREENCHE OS CAMPOS DE EDIÇÃO ---
-	#item_in_atlas_name.text = NAME[index]
-	#w_change_amount.text = str(AMOUNT[index])
-	
+
 	item_in_atlas_name.text = "Editando: " + item_data.get("NAME", "Sem Nome")
 	w_change_item_name.text = item_data.get("NAME", "")
 	w_change_amount.text = str(item_data.get("AMOUNT", 0))
@@ -296,44 +464,53 @@ func _on_edit_properties(item_id) -> void:
 		w_confirm_btn.pressed.disconnect(_on_apply_changes)
 		w_confirm_btn.pressed.connect(_on_apply_changes.bind(item_id))
 	
-	
 	# Botão de mudar ícone
-	if w_change_icon.pressed.is_connected(_on_change_icon):
-		w_change_icon.pressed.disconnect(_on_change_icon)
-	w_change_icon.pressed.connect(_on_change_icon.bind(item_id))
+	if w_change_icon.pressed.is_connected(_on_edit_icon):
+		w_change_icon.pressed.disconnect(_on_edit_icon)
+	w_change_icon.pressed.connect(_on_edit_icon.bind(item_id))
 	
-	print("Alterou o json")
-	
-func _on_apply_changes() -> void:
-	print("apply changes")
+func _on_apply_changes(item_id: int) -> void:
+	print("Aplicando mudanças para o item ID: ", item_id)
 	write_atlas.visible = false
-
-func _on_change_icon() -> void:
 	
-	print("Mudar de ícone") # --- DEBUG ---
+	# --- ALTERAÇÃO ---
+	var index = ID.find(item_id)
 	
-	if not current_slot_texture:
-		push_error("Nenhum slot selecionado para trocar ícone")
+	# --- ERROR VERIFICATION ---
+	if index < 0:
+		push_error("ID não encontrado nos arrays internos ao aplicar mudanças: ", item_id)
 		return
 	
-	#Criar um FileDialog temporário
-	var file_dialog = FileDialog.new()
+	# --- UPDATES ARRAYS WITH NEW VALUES ---
+	NAME[index] = w_change_item_name.text
+	AMOUNT[index] = int(w_change_amount.text)
 	
-	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
-	file_dialog.access = FileDialog.ACCESS_RESOURCES
-	file_dialog.filters = ["*.png", "*.jpg", "*.jpeg"]
+	# --- SE TIVER MUDANÇA DE TEXTURA, ELA JÁ ESTÁ ATUALIZADA NO ARRAY ICON DURANTE O _ON_CHANGE_ICON
 	
-	file_dialog.files_selected.connect(func(path): # função lambda pra economizar espaço
-		if ResourceLoader.exists(path):
-			var new_texture = load(path)
-			current_slot_texture.texture = new_texture
-			
-			var index = ID.find((int(current_slot_texture.get_parent().get_parent().get_node("R_MarginContainer/R_ITEM_ID").text)))
-			
-			if index != -1:
-				ICON[index] = path
+	# alteraço visual do slot
+	for slot in r_grid_container.get_children():
+		if slot == r_slot_master:
+			continue
 		
-		file_dialog.queue_free()
-		)
-	add_child(file_dialog)
-	file_dialog.popup_centered_ratio()
+		var slot_id_text = slot.get_node("R_PanelContainer/R_slot/R_MarginContainer/R_ITEM_ID")
+		
+		#Atualiza os textos no slot com verificação de nodes
+		if slot_id_text.text == str(item_id):
+			slot.get_node("R_PanelContainer/R_slot/R_MarginContainer2/R_ITEM_NAME").text = NAME[index]
+			slot.get_node("R_PanelContainer/R_slot/R_MarginContainer3/R_ITEM_AMOUNT").text = str(AMOUNT[index])
+			break
+		
+		
+		# salva alterações no .json
+		writeJson()
+		
+		write_atlas.visible = false
+		print("Alterado as informações com sucesso para o item ID: ", item_id)
+		
+		break
+	
+	writeJson()
+
+func _on_edit_icon() -> void:
+	
+	print("Mudar de ícone") # --- DEBUG ---

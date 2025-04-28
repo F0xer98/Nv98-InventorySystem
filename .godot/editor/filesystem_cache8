@@ -1,25 +1,26 @@
 ea4bc82a6ad023ab7ee23ee620429895
-::res://::1745312709
+::res://::1745765135
 icon.svg::CompressedTexture2D::1728462056270917900::1744933241::1744968222::1::::<><>::
 ::res://addons/::1745000829
-::res://addons/inventorytool/::1745276357
-inventory_manager.gd::GDScript::-1::1745276357::0::1::::<>EditorPlugin<>::
+::res://addons/inventorytool/::1745498768
+inventory_manager.gd::GDScript::-1::1745498768::0::1::::<>EditorPlugin<>::
 plugin.cfg::TextFile::-1::1745276357::0::1::::<><>::
-::res://addons/inventorytool/icons/::1745186050
-1398911_correct_mark_success_tick_valid_icon (1).png::CompressedTexture2D::7380756243361297003::1745008980::1745009070::1::::<><>::
-1891011_circle_cog_customize_gear_preferences_icon.png::CompressedTexture2D::2081564359724005400::1745009066::1745009070::1::::<><>::
+::res://addons/inventorytool/icons/::1745495512
+addIcon.png::CompressedTexture2D::1681529137378037446::1745494657::1745494698::1::::<><>::
+gearIcon.png::CompressedTexture2D::2081564359724005400::1745009066::1745495480::1::::<><>::
 gridIcon.png::CompressedTexture2D::8056682929412846640::1745185930::1745186050::1::::<><>::
 inventoryManagerICon_transparent.png::CompressedTexture2D::1007578314650631238::1745185850::1745186050::1::::<><>::
 listIcon.png::CompressedTexture2D::8127995348911743447::1745186009::1745186050::1::::<><>::
 magnifying glass 64x64.png::CompressedTexture2D::8123036429323289730::1744999911::1744999916::1::::<><>::
 placeHolder.png::CompressedTexture2D::4408952783900788306::1745005552::1745005583::1::::<><>::
-::res://addons/inventorytool/scripts/::1745276490
-inventory_manager.gd::GDScript::-1::1745276490::0::1::::InventoryManager<>Node<>res://addons/inventorytool/icons/inventoryManagerIcon_transparent.png::
+successIcon.png::CompressedTexture2D::7380756243361297003::1745008980::1745495512::1::::<><>::
+::res://addons/inventorytool/scripts/::1745505541
+inventory_manager.gd::GDScript::-1::1745505541::0::1::::InventoryManager<>Node<>res://addons/inventorytool/icons/inventoryManagerIcon_transparent.png::
 list_inventory_manager.gd::GDScript::-1::1744999227::0::1::::<>Control<>res://addons/inventorytool/icons/inventoryManagerIcon_transparent.png::
 new_window.gd::GDScript::-1::1744972204::0::1::::<>Control<>::
-::res://addons/inventorytool/ui/::1745278502
+::res://addons/inventorytool/ui/::1745505543
 inventoryManager.tscn::PackedScene::4057698574412959808::1744999227::0::1::::<><>::res://addons/inventorytool/scripts/list_inventory_manager.gd
-inventory_manager.tscn::PackedScene::7236437088772482645::1745278502::0::1::::<><>::res://addons/inventorytool/scripts/inventory_manager.gd<>uid://dny4huaw3oq0a::::res://addons/inventorytool/icons/magnifying glass 64x64.png<>uid://b32y2qjj1vheg::::res://addons/inventorytool/icons/placeHolder.png<>uid://4wlccm841kya::::res://addons/inventorytool/icons/1891011_circle_cog_customize_gear_preferences_icon.png<>uid://ddfj8hnp2icn0::::res://addons/inventorytool/icons/1398911_correct_mark_success_tick_valid_icon (1).png
-::res://addons/test/::1745238702
-backuptest.json::JSON::-1::1745007950::0::1::::<><>::
-test.json::JSON::-1::1745238702::0::1::::<><>::
+inventory_manager.tscn::PackedScene::7236437088772482645::1745505543::0::1::::<><>::res://addons/inventorytool/scripts/inventory_manager.gd<>uid://dny4huaw3oq0a::::res://addons/inventorytool/icons/magnifying glass 64x64.png<>uid://x7sslloutwig::::res://addons/inventorytool/icons/addIcon.png<>uid://b32y2qjj1vheg::::res://addons/inventorytool/icons/placeHolder.png<>uid://4wlccm841kya::::res://addons/inventorytool/icons/gearIcon.png<>uid://ddfj8hnp2icn0::::res://addons/inventorytool/icons/successIcon.png
+::res://addons/test/::1745502365
+backuptest.json::JSON::-1::1745502365::0::1::::<><>::
+test.json::JSON::-1::1745363448::0::1::::<><>::
