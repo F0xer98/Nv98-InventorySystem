@@ -4,8 +4,6 @@
 extends Node
 class_name InventoryManager
 
-var current_json_path: String = "" #holds the path to selected .json file
-var create_json_path: String = "" # hold the path to a new atlas
 # --- FILE STRUCTURE ---
 
 # --- CREATE ATLAS ---
@@ -14,6 +12,7 @@ var create_json_path: String = "" # hold the path to a new atlas
 @onready var create_h_box_container: HBoxContainer = $"create atlas/HBoxContainer"
 @onready var new_slot_btn: Button = $"create atlas/HBoxContainer/NewSlotBtn"
 @onready var delete_slot_btn: Button = $"create atlas/HBoxContainer/DeleteSlotBtn"
+@onready var apply_changes_btn: Button = $"create atlas/HBoxContainer/ApplyChangesBtn"
 @onready var create_scroll_container: ScrollContainer = $"create atlas/CreateScrollContainer"
 @onready var scroll_vbox: VBoxContainer = $"create atlas/CreateScrollContainer/scrollVbox"
 @onready var slot_template: MarginContainer = $"create atlas/CreateScrollContainer/scrollVbox/slotTemplate"
@@ -81,21 +80,84 @@ var create_json_path: String = "" # hold the path to a new atlas
 @onready var w_change_amount: LineEdit = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_MarginContainer2_editor/W_CHANGE_AMOUNT"
 @onready var w_confirm_btn: Button = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_CONFIRM_BTN"
 
-var current_slot_texture : TextureRect = null # References TextureRect from item being edited - MUST BE A GLOBAL VARIABLE
 
-# arrays usados PARA CRIAÇÃO DE NOVO ATLAS
-var create_ID : Array = [] #somente int
-var create_NAME : Array = [] #somente strings
-var create_ICON : Array = [] #somente ícones
-var create_AMOUNT: Array = []  #somente int
+
+var current_slot_texture : TextureRect = null # References TextureRect from item being edited - MUST BE A GLOBAL VARIABLE
+var current_json_path: String = "" #holds the path to selected .json file
+var create_json_path: String = "" # hold the path to a new atlas
 
 #arrays usados PARA EDIÇÃO DE ATLAS
-var ID : Array = [] #somente int
-var NAME : Array = [] #somente strings
+var ID : Array[int] = [] #somente int
+var NAME : Array[String] = [] #somente strings
 var ICON : Array = [] #somente ícones
-var AMOUNT: Array = []  #somente int
+var AMOUNT: Array = []
 
+
+# arrays usados PARA CRIAÇÃO DE NOVO ATLAS
+var create_ID : Array[int] = [] #somente int
+var create_NAME : Array[String] = [] #somente strings
+var create_ICON : Array = [] #somente ícones
+var create_AMOUNT: Array = []
+
+# used in both createNewAtlas and _on_new_slot_created
+var current_slots : Array = []
+var selected_slot = null
+
+
+func _ready() -> void:
+	load_button.pressed.connect(_on_load_btn_pressed)
+	file_dialog.file_selected.connect(_on_selected_file)
+	create_button.pressed.connect(createNewAtlas)
+	
+	# Hides UI as default
+	r_slot_master.visible = false
+	write_atlas.visible = false
+	create_scroll_container.visible = false
+	create_h_box_container.visible = false
+
+
+# --- DEDICATED ARE TO MODIFY AN EXISTING .JSON ---
+
+
+
+## Literalmente uma função responsável por criar um atlas do zero.
+## Tem integração com a UI
+func createNewAtlas() -> void: # Cria um novo slot no .json do atlas
+	
+	# Altera a visibilidade da área de criação
+	create_h_box_container.visible = not create_h_box_container.visible # os botões de criar / deletar slot
+	create_scroll_container.visible = not create_scroll_container.visible # para modo de edição
+	
+	# Só entra no modo edição se a janela estiver aberta para evitar problemas
+	if create_scroll_container.visible:
+		print("Modo criação de atlas")
+		
+		# Limpa arrays de criação de items para novo atlas
+		create_ID.clear()
+		create_NAME.clear()
+		create_ICON.clear()
+		create_AMOUNT.clear()
+		
+		# Cria um item inicial vazio nos arrays de edição
+		create_ID.append(0)
+		create_NAME.append("NOVO ITEM")
+		create_AMOUNT.append("0")
+		create_ICON.append("")
+		
+		# caminho para a pasta onde o .json será salvo
+		create_json_path = "" #Somente para iniciar. Será definido ao salvar
+		
+		# Preenche campos da UI do current atlas visualizer com valores de teste
+		
+		
+	# sai do modo edição
+	else:
+		print("Criação de atlas desativado")
+
+## Creates an UI of the current .json 
 func createLoadSlot() -> void:
+	print("createLoadSlot")
+	
 	# Reads itens in .json file
 	var items = readJson(current_json_path)
 	
@@ -160,6 +222,7 @@ func createLoadSlot() -> void:
 		# conecta o sinal do botão de edição passando ID como parâmetro (int)
 		edit_btn.pressed.connect(_on_edit_properties.bind(int(id)))
 
+## Reads the json selected by the "Load item atlas" button
 func readJson(path: String) -> Dictionary:
 	# Limpa os arrays antes de carregar os novos dados
 	ID.clear()
@@ -214,34 +277,7 @@ func readJson(path: String) -> Dictionary:
 
 	return result
 
-func deleteSlotAtlas() -> void:
-	
-	# Se não tiver slot novo, não faz nada
-	if current_slots.size() == 0:
-		print("Nenhum slot para apagar")
-		return
-
-	# Pega o último slot que foi adicionado
-	var last_slot = current_slots.pop_back()
-	
-	# Remove ele da cena, seja qual for o parent
-	var parent = last_slot.get_parent()
-	if parent:
-		parent.remove_child(last_slot)
-	
-	# libera o nó da cena
-	last_slot.queue_free()
-
-	# Sincroniza os arrays de dados de criação
-	if create_ID.size() > 0:
-		create_ID.pop_back()
-		create_NAME.pop_back()
-		create_ICON.pop_back()
-		create_AMOUNT.pop_back()
-	print("Slot apagado. Restam %d slots." % current_slots.size())
-	
-	# Só retorna no print "Nenhum slot para apagar"
-
+## Escreve no arquivo .json selecionado
 func writeJson():
 	
 	# --- ERROR CHECKING ---
@@ -293,83 +329,72 @@ func writeJson():
 	print("Atlas salvo com sucesso em: ", current_json_path)
 	print("Total de itens salvos: ", json_data.size())
 
-# used in both createNewAtlas and _on_new_slot_created
-var current_slots : Array = []
-var selected_slot = null
-
-func createNewAtlas() -> void: # Cria um novo slot no .json do atlas
-	
-	# Altera a visibilidade da área de criação
-	create_h_box_container.visible = not create_h_box_container.visible # os botões de criar / deletar slot
-	create_scroll_container.visible = not create_scroll_container.visible # para modo de edição
-	
-	# Só entra no modo edição se a janela estiver aberta para evitar problemas
-	if create_scroll_container.visible:
-		print("Modo criação de atlas")
-		
-		# Limpa arrays de criação de items para novo atlas
-		create_ID.clear()
-		create_NAME.clear()
-		create_ICON.clear()
-		create_AMOUNT.clear()
-		
-		# Cria um item inicial vazio nos arrays de edição
-		create_ID.append(0)
-		create_NAME.append("NOVO ITEM")
-		create_AMOUNT.append("0")
-		create_ICON.append("")
-		
-		# caminho para a pasta onde o .json será salvo
-		create_json_path = "" #Somente para iniciar. Será definido ao salvar
-		
-		# Preenche campos da UI do current atlas visualizer com valores de teste
-		
-		
-	# sai do modo edição
-	else:
-		print("Criação de atlas desativado")
-
-
-## Cria um template de slot no atlas.
-## Cada slot na UI representa um item no atlas (json).
-func _on_new_slot_created() -> void:
-	print("Novo slot criado")
-	create_scroll_container.visible = true
-	
-	# Duplica a instância do slotTemplate
-	var new_slot = slot_template.duplicate()
-	
-	# Configura esta nova instância
-	new_slot.visible = true
-	new_slot.name = "Slot_%d" % current_slots.size() # seta o nome para "Slot + quantos slots tem"
-	
-	# Adiciona ao container
-	scroll_vbox.add_child(new_slot)
-	current_slots.append(new_slot)
-
-func _ready() -> void:
-	load_button.pressed.connect(_on_load_btn_pressed)
-	file_dialog.file_selected.connect(_on_selected_file)
-	create_button.pressed.connect(createNewAtlas)
-	new_slot_btn.pressed.connect(_on_new_slot_created)
-	
-	r_slot_master.visible = false
-	write_atlas.visible = false
-	create_scroll_container.visible = false
-	create_h_box_container.visible = false
-	
-func _on_load_btn_pressed() -> void:
-	
-	file_dialog.popup_centered()
-	file_dialog.filters = ["*.json"]  # filters only .json
-
-# When selected a .json file, calls readJson() to handle that information
-# Then calls createNewSlot() to effectively create a new slot
+## When selected a .json file, calls readJson() to handle that information
+## Then calls createNewSlot() to effectively create a new slot
 func _on_selected_file(path: String) -> void:
 	current_json_path = path # a variável global de caminho do .json recebe o caminho apontado pelo FileDialog
 	readJson(path)
 	createLoadSlot()
 
+
+## É chamado ao clicar em "Load item atlas" chama a tela de carregamento e filtra por apenas .json
+func _on_load_btn_pressed() -> void:
+	
+	file_dialog.popup_centered()
+	file_dialog.filters = ["*.json"]  # filters only .json
+
+## When clicked on the "change icon" on load item atlas
+func _on_edit_icon() -> void:
+	
+	print("Mudar de ícone") # --- DEBUG ---
+
+## Triggered when pressed ApplyChangesBtn
+## Takes the current create_ID, create_AMOUNT, create_ICON and create_NAME and saves it to the .json
+## On the path selected by the user (not sure if its setted in the code somewhere, im too tired to check it)
+## Just here commenting things 
+func _on_apply_changes(item_id: int) -> void:
+	print("Aplicando mudanças para o item ID: ", item_id)
+	write_atlas.visible = false
+	
+	# --- ALTERAÇÃO ---
+	var index = ID.find(item_id)
+	
+	# --- ERROR VERIFICATION ---
+	if index < 0:
+		push_error("ID não encontrado nos arrays internos ao aplicar mudanças: ", item_id)
+		return
+	
+	# --- UPDATES ARRAYS WITH NEW VALUES ---
+	NAME[index] = w_change_item_name.text
+	AMOUNT[index] = int(w_change_amount.text)
+	
+	# --- SE TIVER MUDANÇA DE TEXTURA, ELA JÁ ESTÁ ATUALIZADA NO ARRAY ICON DURANTE O _ON_CHANGE_ICON
+	
+	# alteraço visual do slot
+	for slot in r_grid_container.get_children():
+		if slot == r_slot_master:
+			continue
+		
+		var slot_id_text = slot.get_node("R_PanelContainer/R_slot/R_MarginContainer/R_ITEM_ID")
+		
+		#Atualiza os textos no slot com verificação de nodes
+		if slot_id_text.text == str(item_id):
+			slot.get_node("R_PanelContainer/R_slot/R_MarginContainer2/R_ITEM_NAME").text = NAME[index]
+			slot.get_node("R_PanelContainer/R_slot/R_MarginContainer3/R_ITEM_AMOUNT").text = str(AMOUNT[index])
+			break
+		
+		
+		# salva alterações no .json
+		writeJson()
+		
+		write_atlas.visible = false
+		print("Alterado as informações com sucesso para o item ID: ", item_id)
+		
+		break
+	
+	writeJson()
+
+## When clicked on edit properties of a button in the load item atlas
 func _on_edit_properties(item_id: int) -> void:
 
 	write_atlas.visible = true
@@ -456,49 +481,144 @@ func _on_edit_properties(item_id: int) -> void:
 	if w_change_icon.pressed.is_connected(_on_edit_icon):
 		w_change_icon.pressed.disconnect(_on_edit_icon)
 	w_change_icon.pressed.connect(_on_edit_icon.bind(item_id))
+
+
+
+# --- DEDICATED ARE TO NEW .JSON FROM SCRATCH USING THE PLUGIN ---
+
+
+
+## Cria um slot no ARRAY create_ID, create_NAME, create_AMOUNT, e create_ICON
+## Porém NÃO é salvo de imediato no .json, fica salvo temporariamente na memória.
+## Somente após salvar, que é escrito no .json e pode ser usado como um atlas propriamente dito
+## Lembrando que somente o .json é editável.
+## O primeiro item tem ID 1
+func createAtlasSlot() -> Dictionary:
+	print("Criando novo slot")
 	
-func _on_apply_changes(item_id: int) -> void:
-	print("Aplicando mudanças para o item ID: ", item_id)
-	write_atlas.visible = false
+	# Habilita o botão de aplicar e mostra a àrea de criação
+	apply_changes_btn.disabled = false
+	create_scroll_container.visible = true
 	
-	# --- ALTERAÇÃO ---
-	var index = ID.find(item_id)
+	# Duplica a instância do slotTemplate e adiciona a ui
+	var new_slot = slot_template.duplicate()
+	new_slot.visible = true
+	new_slot.name = "Slot_%d" % current_slots.size() # seta o nome do node para "Slot + quantos slots tem"
+	scroll_vbox.add_child(new_slot)
+	current_slots.append(new_slot)
 	
-	# --- ERROR VERIFICATION ---
-	if index < 0:
-		push_error("ID não encontrado nos arrays internos ao aplicar mudanças: ", item_id)
+	# Calcula um ID único
+	var new_id = create_ID.size() # 0, 1, 2, 3, (...)
+	
+	create_ID.append(new_id)
+	create_NAME.append("NOVO ITEM")
+	create_AMOUNT.append(0)
+	create_ICON.append("") # string vazia = sem ícone definido, usa o placeholder como padrão
+	
+	# Atualiza o visualizador com os dados do novo slot criado
+	
+	current_atlas_visualizer.visible = true
+	c_item_id.text = str(new_id)
+	c_item_name.text = create_NAME.back()
+	c_max_stack.text = str(create_AMOUNT.back())
+	c_icon.texture = load("res://addons/inventorytool/icons/placeHolder.png") #usa o placeholder como padrão
+	
+	
+	#print a quantidade de IDs a serem criados
+	print("create_ID: ", create_ID)
+	return getCreateAtlasDict()
+
+## Deleta o Slot no ARRAY create_ID, create_NAME, create_AMOUNT, e create_ICON e também na UI
+## Porém NÃO é salvo de imediato no .json, fica salvo temporariamente na memória (array)
+func deleteAtlasSlot() -> void:
+	
+	# Se não tiver slot novo, desativa o botão de salvar e não faz nada
+	if current_slots.size() == 0:
+		print("Nenhum slot para apagar")
 		return
 	
-	# --- UPDATES ARRAYS WITH NEW VALUES ---
-	NAME[index] = w_change_item_name.text
-	AMOUNT[index] = int(w_change_amount.text)
+	# Pega o último slot que foi adicionado
+	var last_slot = current_slots.pop_back()
 	
-	# --- SE TIVER MUDANÇA DE TEXTURA, ELA JÁ ESTÁ ATUALIZADA NO ARRAY ICON DURANTE O _ON_CHANGE_ICON
+	# Remove ele da cena, seja qual for o parent
+	var parent = last_slot.get_parent()
+	if parent:
+		parent.remove_child(last_slot)
 	
-	# alteraço visual do slot
-	for slot in r_grid_container.get_children():
-		if slot == r_slot_master:
-			continue
-		
-		var slot_id_text = slot.get_node("R_PanelContainer/R_slot/R_MarginContainer/R_ITEM_ID")
-		
-		#Atualiza os textos no slot com verificação de nodes
-		if slot_id_text.text == str(item_id):
-			slot.get_node("R_PanelContainer/R_slot/R_MarginContainer2/R_ITEM_NAME").text = NAME[index]
-			slot.get_node("R_PanelContainer/R_slot/R_MarginContainer3/R_ITEM_AMOUNT").text = str(AMOUNT[index])
-			break
-		
-		
-		# salva alterações no .json
-		writeJson()
-		
-		write_atlas.visible = false
-		print("Alterado as informações com sucesso para o item ID: ", item_id)
-		
-		break
-	
-	writeJson()
+	# libera o nó da cena
+	last_slot.queue_free()
 
-func _on_edit_icon() -> void:
+	# Sincroniza os arrays de dados de criação
+	if create_ID.size() > 0:
+		create_ID.pop_back()
+		create_NAME.pop_back()
+		create_ICON.pop_back()
+		create_AMOUNT.pop_back()
+	print("Slot apagado. Restam %d slots." % current_slots.size())
 	
-	print("Mudar de ícone") # --- DEBUG ---
+	if current_slots.size() == 0:
+		apply_changes_btn.disabled = true
+	
+	print(create_ID)
+
+func _on_create_file_selected(path: String) -> void:
+	# guarda o caminho para futuras salvamentos
+	create_json_path = path
+	
+	print("O arquivo será salvo em: ", path)
+	
+	# serializar e gravar o JSON
+	saveCreateAtlasToJson(create_json_path)
+	
+## Função específica para criar e salvar um novo json
+func _on_new_apply_changes() -> void:
+	if create_json_path == "":
+		create_file_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
+		create_file_dialog.access = FileDialog.ACCESS_RESOURCES
+		create_file_dialog.filters = ["*.json"]
+		create_file_dialog.dialog_hide_on_ok = true
+		
+		create_file_dialog.file_selected.connect(_on_create_file_selected)
+		
+		create_file_dialog.popup_centered()
+	else:
+		saveCreateAtlasToJson(create_json_path)
+
+## Responsável por atualizar o current atlas visualizer
+## Quando o usuário selecionar, no slotTemplate do scrollContainer, o equivalente no current atlas visualizer
+## Muda de cor para o usuário ter uma confirmação Visual do que ele tá mexendo
+## Por exemplo, mudar a cor para vermelho o "C_ITEM_ID" caso o usuário esteja alterando o "addIDToJson"
+func _on_hover_new_atlas_creator() -> void:
+	# por fazer ainda, só um placeholder por enquanto
+	pass
+
+# --- AINDA NÃO INTEGRADO ---
+
+## Gera um dictionary pronto para JSON a partir dos arrays de criação
+func getCreateAtlasDict() -> Dictionary:
+	var outPut : Dictionary = {}
+	
+	for i in range(create_ID.size()):
+		var id_str = str(create_ID[i])
+		outPut[id_str] = {
+			"NAME": create_NAME[i],
+			"AMOUNT": create_AMOUNT[i],
+			"STACK_SIZE": 64,            # ou outro valor padrão ou variável
+			"ICON": create_ICON[i]
+		}
+	
+	return outPut
+
+## Pega as informações dos create_ arrays e os salva num JSON na pasta selecionada
+func saveCreateAtlasToJson(path: String) -> void:
+	var dict = getCreateAtlasDict()
+	var json = JSON.stringify(dict, "\t", false, true)
+	var file = FileAccess.open(path, FileAccess.WRITE)
+	
+	if not file:
+		push_error("Não conseguiu abrir ", path)
+		return
+	
+	file.store_string(json)
+	file.close()
+	print("Salvo em JSON na pasta: ", path)

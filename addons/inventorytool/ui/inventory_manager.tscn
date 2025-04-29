@@ -41,6 +41,13 @@ layout_mode = 2
 text = "Delete Slot
 "
 
+[node name="ApplyChangesBtn" type="Button" parent="create atlas/HBoxContainer"]
+layout_mode = 2
+disabled = true
+text = "Apply changes"
+icon = ExtResource("4_t8b11")
+icon_alignment = 2
+
 [node name="CreateScrollContainer" type="ScrollContainer" parent="create atlas"]
 visible = false
 custom_minimum_size = Vector2(0, 160)
@@ -88,10 +95,11 @@ max_length = 63
 expand_to_text_length = true
 
 [node name="createFileDialog" type="FileDialog" parent="create atlas/CreateScrollContainer/scrollVbox/slotTemplate/VBoxContainer/mainItemHolder"]
-title = "Load icon"
+title = "Save"
 size = Vector2i(600, 400)
 
 [node name="current atlas visualizer" type="VBoxContainer" parent="create atlas"]
+visible = false
 layout_mode = 2
 
 [node name="C_SLOTMASTER_TEMPLATE" type="MarginContainer" parent="create atlas/current atlas visualizer"]
@@ -310,5 +318,7 @@ layout_mode = 2
 text = "APPLY"
 icon = ExtResource("4_t8b11")
 
-[connection signal="pressed" from="create atlas/HBoxContainer/DeleteSlotBtn" to="." method="deleteSlotAtlas"]
+[connection signal="pressed" from="create atlas/HBoxContainer/NewSlotBtn" to="." method="createAtlasSlot"]
+[connection signal="pressed" from="create atlas/HBoxContainer/DeleteSlotBtn" to="." method="deleteAtlasSlot"]
+[connection signal="pressed" from="create atlas/HBoxContainer/ApplyChangesBtn" to="." method="_on_new_apply_changes"]
 [connection signal="pressed" from="write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_CONFIRM_BTN" to="." method="_on_apply_changes"]
