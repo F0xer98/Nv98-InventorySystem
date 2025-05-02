@@ -88,15 +88,11 @@ placeholder_text = "Item name"
 max_length = 63
 expand_to_text_length = true
 
-[node name="LineEdit2" type="LineEdit" parent="create atlas/CreateScrollContainer/scrollVbox/slotTemplate/VBoxContainer/mainItemHolder"]
+[node name="Item amount" type="LineEdit" parent="create atlas/CreateScrollContainer/scrollVbox/slotTemplate/VBoxContainer/mainItemHolder"]
 layout_mode = 2
 placeholder_text = "Item amount"
 max_length = 63
 expand_to_text_length = true
-
-[node name="createFileDialog" type="FileDialog" parent="create atlas/CreateScrollContainer/scrollVbox/slotTemplate/VBoxContainer/mainItemHolder"]
-title = "Save"
-size = Vector2i(600, 400)
 
 [node name="current atlas visualizer" type="VBoxContainer" parent="create atlas"]
 visible = false
@@ -147,6 +143,10 @@ theme_override_constants/margin_right = 5
 layout_mode = 2
 text = "CURRENT ITEM STACK"
 
+[node name="createFileDialog" type="FileDialog" parent="create atlas"]
+title = "Save"
+size = Vector2i(600, 400)
+
 [node name="read atlas" type="VBoxContainer" parent="."]
 layout_mode = 2
 
@@ -159,7 +159,7 @@ text = "Load item atlas"
 icon = ExtResource("2_f2362")
 expand_icon = true
 
-[node name="FileDialog" type="FileDialog" parent="read atlas/atlas loader"]
+[node name="jsonLoader" type="FileDialog" parent="read atlas/atlas loader"]
 title = "Open a File"
 position = Vector2i(0, 36)
 size = Vector2i(800, 600)
@@ -318,7 +318,10 @@ layout_mode = 2
 text = "APPLY"
 icon = ExtResource("4_t8b11")
 
+[connection signal="pressed" from="create atlas/CreateButton" to="." method="createNewAtlas"]
 [connection signal="pressed" from="create atlas/HBoxContainer/NewSlotBtn" to="." method="createAtlasSlot"]
 [connection signal="pressed" from="create atlas/HBoxContainer/DeleteSlotBtn" to="." method="deleteAtlasSlot"]
 [connection signal="pressed" from="create atlas/HBoxContainer/ApplyChangesBtn" to="." method="_on_new_apply_changes"]
+[connection signal="pressed" from="read atlas/atlas loader/LoadButton" to="." method="_on_load_btn_pressed"]
+[connection signal="file_selected" from="read atlas/atlas loader/jsonLoader" to="." method="_on_selected_file"]
 [connection signal="pressed" from="write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_CONFIRM_BTN" to="." method="_on_apply_changes"]
