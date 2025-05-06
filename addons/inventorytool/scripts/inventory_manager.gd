@@ -18,7 +18,7 @@ class_name InventoryManager
 @onready var slot_template: MarginContainer = $"create atlas/CreateScrollContainer/scrollVbox/slotTemplate" #template to display
 
 # Moved create_file_dialog outside the template for clarity
-@onready var create_file_dialog: FileDialog = $"create atlas/createFileDialog"
+
 
 
 # --- CURRENT ATLAS VISUALIZER (for Create Atlas) ---
@@ -33,7 +33,6 @@ class_name InventoryManager
 # --- ATLAS LOADER ---
 @onready var atlas_loader: VBoxContainer = $"read atlas/atlas loader"
 @onready var load_button: Button = $"read atlas/atlas loader/LoadButton"
-@onready var jsonLoader: FileDialog = $"read atlas/atlas loader/jsonLoader"
 @onready var r_slot_master: MarginContainer = $"read atlas/atlas loader/R_slotMaster"
 @onready var r_texture_rect: TextureRect = $"read atlas/atlas loader/R_slotMaster/R_PanelContainer/R_slot/R_TextureRect"
 @onready var r_item_id: Label = $"read atlas/atlas loader/R_slotMaster/R_PanelContainer/R_slot/R_MarginContainer/R_ITEM_ID"
@@ -56,6 +55,11 @@ class_name InventoryManager
 @onready var w_change_amount: LineEdit = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_MarginContainer2_editor/W_CHANGE_AMOUNT"
 @onready var w_confirm_btn: Button = $"write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_CONFIRM_BTN"
 
+# --- FILE DIALOG ---
+@onready var create_file_dialog: FileDialog = $"create atlas/createFileDialog"
+@onready var jsonLoader: FileDialog = $"read atlas/atlas loader/jsonLoader"
+@onready var icon_file_dialog: FileDialog = $"IconFileDialog" # Assumes it's a child of InventoryManager node
+
 
 var current_slot_texture : TextureRect = null # References TextureRect from item being edited - MUST BE A GLOBAL VARIABLE
 var edit_json_path: String = "" #holds the path to selected .json file
@@ -77,6 +81,7 @@ var create_AMOUNT: Array = []
 # used in both createNewAtlas and _on_new_slot_created
 var current_slots : Array = [] # Holds references to the instantiated slotTemplate nodes
 var selected_slot = null
+var _current_editing_item_id: int = -1
 
 
 func _ready() -> void:
@@ -148,8 +153,6 @@ func _clear_create_atlas_state():
 
 ## Loads info from an supported .json format and display them on "Load Item Atlas" and apply to the UI
 func createLoadSlot() -> void:
-	print("createLoadSlot")
-	
 	# Reads itens from an already existing .json file
 	var items = loadJsonAtlas(edit_json_path)
 	
@@ -316,24 +319,103 @@ func _on_load_btn_pressed() -> void:
 	jsonLoader.filters = ["*.json ; JSON Atlas Files"]
 	jsonLoader.popup_centered()
 
+var _icon_edit_index: int = -1
+var _icon_edit_mode: String = ""
 
 ## When clicked on the "change icon" on load item atlas
+## Sets a filter and popup
 func _on_edit_icon(item_id: int) -> void:
-	print("Mudar de ícone para o item ID: ", item_id) # --- DEBUG ---
-	
-	# This function needs implementation - likely open another FileDialog
-	# to select an image and update the ICON array and current_slot_texture
-	
-	# Placeholder: Needs FileDialog to select image, then update ICON[index] and texture
-	var index = edit_ID.find(item_id)
+
+	var index = edit_ID.find(_current_editing_item_id)
 	if index < 0:
 		push_error("ID não encontrado ao tentar editar ícone: ", item_id)
 		return
 	
-	# Example: Open file dialog, on file selected, update ICON[index] and texture
-	# jsonLoader_icon.popup_centered()
-	# jsonLoader_icon.file_selected.connect(_on_icon_file_selected.bind(index))
+	_icon_edit_index = index
+	_icon_edit_mode = "icon"
+	
+	# Configures and show FileDialog to icon selection
+	icon_file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+	icon_file_dialog.access = FileDialog.ACCESS_RESOURCES
+	icon_file_dialog.filters = ["*.png, *.jpg, *.jpeg"]
+	icon_file_dialog.popup_centered()
 
+# Quando o usuário seleciona um arquivo no FileDialog
+# Função chamada quando o usuário confirma qual
+func _on_icon_file_selected(path: String) -> void:
+	
+	# sets new icon on the json (writing into the json)
+	if _icon_edit_index < 0 or _icon_edit_index >= edit_ICON.size():
+		push_error("Índice inválido (%d) ao tentar definir novo ícone." % _icon_edit_index)
+		_icon_edit_index = -1 # Reseta por segurança
+		return
+	
+	edit_ICON[_icon_edit_index] = path
+	
+	var texture = null
+	
+	if ResourceLoader.exists(path):
+		texture = load(path)
+	else:
+		push_warning("Arquivo de ícone selecionado para preview não encontrado: %s" % path)
+	
+	w_change_icon.icon = texture
+	update_icon_preview(_icon_edit_index, path) # Atualiza na interface imediatamente
+	_icon_edit_index = -1
+	_icon_edit_mode = ""
+
+# Atualiza o preview do ícone na interface visual
+
+# A ideia desta função é fazer com que a imagem do TextureRect (R_TextureRect)
+# Atualize na mesma hora que o usuário selecionar uma imagem
+# Lembrando também que o botão com os dizeres "Change Icon" também deve mudar de ícone
+# Pois atualmente é apenas um placeholder (W_CHANGE_ICON)
+
+# Ideia de como implementar
+# 1. Verificar se o CAMINHO do ícone selecionado é válido
+# 2. Verificar se o ID a ser aplicado é o mesmo que está no .json
+# 3. Aplicar a imagem no W_CHANGE_ICON
+# 4. Aplicar a imagem no R_TextureRect
+# 5. Atualizar o .json com base no path indicado pelo usuário (é chamado pela func set_new_icon)
+func update_icon_preview(index: int, path: String) -> void:
+
+	# --- ERROR CHECKING ---
+	if not FileAccess.file_exists(path):
+		push_error("Caminho do ícone não é válido: ", path)
+		return
+	
+	if index < 0 or index >= edit_ID.size():
+		push_error("Índice de item inválido ao atualizar ícone")
+		return
+	
+	# 1- Verifica se o índice corresponde ao ID que está no JSON
+	var item_id = edit_ID[index]
+	if item_id != edit_ID[index]:
+		push_warning("O ID do item fornecido não condiz com o ID apresentado no JSON")
+	
+	# 2- Carrega a textura
+	var texture = load(path) as Texture2D
+	if not texture:
+		push_error("Falha ao carregar textura do caminho: ", path)
+		return
+	
+	# 3- Aplica imagem no botão de "change icon" ("W_CHANGE_ICON")
+	if w_change_icon:
+		w_change_icon.icon = texture
+		w_change_icon.custom_minimum_size = Vector2(64,64)
+		print(" \n Setando textura para o botão de trocar ícone \n")
+	
+	# 4- Aplica imagem no preview ("R_TextureRect")
+	if r_texture_rect:
+		r_texture_rect.texture = texture
+	else:
+		push_warning("R_TextureRect não está definido")
+	
+	# 5- Atualiza visual do slot na grid
+	if r_slot_master and index < r_slot_master.get_child_count():
+		var slot = r_slot_master.get_child(index)
+		if slot.has_method("set_icon"):
+			slot.set_icon(texture)
 
 ## Gets an an already existing .json and modifies it via Load Item Atlas
 func writeJson():
@@ -383,23 +465,21 @@ func writeJson():
 	
 	file.store_string(json_string)
 	file.close()
-	
-	print("Atlas (editado) salvo com sucesso em: ", edit_json_path)
-	print("Total de itens salvos: ", json_data.size())
 
+# PRIMEIRA COISA FAZER QUANDO ABRIR O CÓDIGO !
+# »»» FAZER A FUNÇÃO _on_apply_changes atualizar o ícone do R_TextureRect ao aplicar «««
+# ELE VAI PEGAR A MESMA TEXTURA DO update_icon_preview() E ATUALZIAR
 
 ## Triggered when pressing the "apply button on "edit properties" from Load Item Atlas
-func _on_apply_changes(item_id: int) -> void:
-	print("Aplicando mudanças (edição) para o item ID: ", item_id)
+## Responsible to also change R_TextureRect to the same image selected on icon_file_dialog
+func _on_apply_changes(item_id: int, path: String = "") -> void:
+	
+	if _current_editing_item_id == -1:
+		push_error("Nenhum item selecionado para confirmar as alterações. ")
+		return
 	
 	# Find the index in the EDIT arrays
 	var index = edit_ID.find(item_id)
-	
-	# --- ERROR VERIFICATION ---
-	if index < 0:
-		push_error("ID não encontrado nos arrays internos ao aplicar mudanças (edição): ", item_id)
-		write_atlas.visible = false # Hide editor on error
-		return
 	
 	# --- VALIDATE INPUTS --- 
 	var new_name = w_change_item_name.text
@@ -422,7 +502,6 @@ func _on_apply_changes(item_id: int) -> void:
 	# --- UPDATES EDIT ARRAYS WITH NEW VALUES ---
 	edit_NAME[index] = new_name
 	edit_AMOUNT[index] = new_amount
-	# ICON[index] should be updated by _on_edit_icon's callback
 	
 	# --- UPDATE VISUAL SLOT IN THE GRID ---
 	var slot_updated = false
@@ -435,10 +514,16 @@ func _on_apply_changes(item_id: int) -> void:
 		if slot_id_label and slot_id_label.text == str(item_id):
 			var name_label = slot.get_node_or_null("R_PanelContainer/R_slot/R_MarginContainer2/R_ITEM_NAME")
 			var amount_label = slot.get_node_or_null("R_PanelContainer/R_slot/R_MarginContainer3/R_ITEM_AMOUNT")
-			# Icon texture should be updated by the icon change logic
+			var texture_rect = slot.get_node_or_null("R_PanelContainer/R_slot/R_TextureRect")
 			
 			if name_label: name_label.text = edit_NAME[index]
 			if amount_label: amount_label.text = str(edit_AMOUNT[index])
+			if texture_rect:
+				var icon_path = edit_ICON[index]
+				if icon_path != "" and ResourceLoader.exists(icon_path):
+					texture_rect.texture = load(icon_path)
+				else:
+					texture_rect.texture = null  # Clear if invalid or no path
 			
 			slot_updated = true
 			break # Found the slot, no need to continue loop
@@ -448,37 +533,51 @@ func _on_apply_changes(item_id: int) -> void:
 
 	# --- SAVE CHANGES TO .JSON FILE ---
 	writeJson() # Save the entire current state of ID, NAME, AMOUNT, ICON arrays
+	print("\n Aplicando mudanças no .json para o item ID: ", item_id ,"\n")
 	
+
 	# --- CLEANUP ---
 	write_atlas.visible = false # Hide the editor panel
 	print("Alterações salvas com sucesso para o item ID: ", item_id)
-
+	
+	_current_editing_item_id = -1 # Resets ID when edit is complete
 
 ## Triggers when click on "edit properties"" on the load item atlas
 func _on_edit_properties(item_id: int) -> void:
-
+	
+	_current_editing_item_id = item_id
+	
 	# Find the index in the EDIT arrays
 	var index = edit_ID.find(item_id)
-	print("Editando item ID: %d, Índice no array: %d" % [item_id, index])
 	
 	# --- ERROR CHECKING ---
 	if index < 0:
-		push_error("ID %d não encontrado nos arrays de edição." % item_id)
+		push_error("Item ID %d não encontrado nos arrays de edição." % item_id)
+		write_atlas.visible = false # Esconde a UI de edição se o ID não for encontrado
 		return
 	
 	# Check if arrays have data for this index (sanity check)
 	if index >= edit_NAME.size() or index >= edit_AMOUNT.size() or index >= edit_ICON.size():
 		push_error("Erro de sincronia nos arrays de edição para índice %d." % index)
 		return
-		
+	
 	# --- PREENCHE OS CAMPOS DE EDIÇÃO using data from arrays ---
 	var current_name = edit_NAME[index]
 	var current_amount = edit_AMOUNT[index]
 	# var current_icon_path = ICON[index] # Icon path is stored here
 
-	item_in_atlas_name.text = "Editando: " + current_name # Display current name
+	item_in_atlas_name.text = "ID: " + str(item_id) # Display current name
 	w_change_item_name.text = current_name
 	w_change_amount.text = str(current_amount)
+	
+	var icon_path = edit_ICON[index]
+	if ResourceLoader.exists(icon_path):
+		w_change_icon.icon = load(icon_path)
+	else:
+		w_change_icon.icon = null
+	
+	# --- SHOW EDITOR ---
+	write_atlas.visible = true
 	
 	# Find the corresponding visual slot's TextureRect to potentially update its texture later
 	# This reference is needed if _on_edit_icon modifies the texture directly
@@ -505,9 +604,6 @@ func _on_edit_properties(item_id: int) -> void:
 	if w_change_icon.pressed.is_connected(_on_edit_icon):
 		w_change_icon.pressed.disconnect(_on_edit_icon)
 	w_change_icon.pressed.connect(_on_edit_icon.bind(item_id))
-
-	# --- SHOW EDITOR ---
-	write_atlas.visible = true
 
 
 # ---##### FUNCTIONS RELATED TO #####---

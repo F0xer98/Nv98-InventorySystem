@@ -1,10 +1,10 @@
+FileDialog
 Button
 PanelContainer
 Label
 TextureRect
 VBoxContainer
 HBoxContainer
-FileDialog
 LineEdit
 HScrollBar
 MarginContainer

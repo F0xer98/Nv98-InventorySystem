@@ -170,7 +170,6 @@ file_mode = 0
 filters = PackedStringArray(".json")
 
 [node name="R_slotMaster" type="MarginContainer" parent="read atlas/atlas loader"]
-visible = false
 layout_mode = 2
 theme_override_constants/margin_left = 4
 theme_override_constants/margin_top = 4
@@ -185,6 +184,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_3jld2")
 layout_mode = 2
 
 [node name="R_TextureRect" type="TextureRect" parent="read atlas/atlas loader/R_slotMaster/R_PanelContainer/R_slot"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 texture = ExtResource("3_p8xd2")
@@ -241,7 +241,6 @@ size_flags_vertical = 3
 columns = 3
 
 [node name="write atlas" type="VBoxContainer" parent="."]
-visible = false
 layout_mode = 2
 
 [node name="w_item_label" type="HBoxContainer" parent="write atlas"]
@@ -318,10 +317,20 @@ layout_mode = 2
 text = "APPLY"
 icon = ExtResource("4_t8b11")
 
+[node name="IconFileDialog" type="FileDialog" parent="."]
+unique_name_in_owner = true
+title = "Open a File"
+size = Vector2i(600, 400)
+ok_button_text = "Open"
+file_mode = 0
+filters = PackedStringArray(".png")
+
 [connection signal="pressed" from="create atlas/CreateButton" to="." method="createNewAtlas"]
 [connection signal="pressed" from="create atlas/HBoxContainer/NewSlotBtn" to="." method="createAtlasSlot"]
 [connection signal="pressed" from="create atlas/HBoxContainer/DeleteSlotBtn" to="." method="deleteAtlasSlot"]
 [connection signal="pressed" from="create atlas/HBoxContainer/ApplyChangesBtn" to="." method="_on_new_apply_changes"]
 [connection signal="pressed" from="read atlas/atlas loader/LoadButton" to="." method="_on_load_btn_pressed"]
 [connection signal="file_selected" from="read atlas/atlas loader/jsonLoader" to="." method="_on_selected_file"]
+[connection signal="pressed" from="write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_CHANGE_ICON" to="." method="_on_edit_icon"]
 [connection signal="pressed" from="write atlas/item viewer/W_ScrollContainer/W_PanelContainer/W_organizer/W_slotMaster/W_PanelContainer_Slot/W_EDIT_VBOX/W_SLOT_EDIT/W_CONFIRM_BTN" to="." method="_on_apply_changes"]
+[connection signal="file_selected" from="IconFileDialog" to="." method="_on_icon_file_selected"]
